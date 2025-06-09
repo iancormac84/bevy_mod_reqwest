@@ -57,7 +57,7 @@ impl Plugin for ReqwestPlugin {
                         .url
                         .clone();
 
-                    if let None = world.get::<Name>(ctx.entity) {
+                    if world.get::<Name>(ctx.entity).is_none() {
                         let mut commands = world.commands();
                         let mut entity = commands.get_entity(ctx.entity).unwrap();
                         entity.insert(Name::new(format!("http: {url}")));
@@ -110,11 +110,11 @@ impl ReqwestPlugin {
 
                         commands.trigger_targets(
                             ReqwestResponseEvent::new(body.clone(), parts.status, parts.headers),
-                            entity.clone(),
+                            entity,
                         );
                     }
                     Err(err) => {
-                        commands.trigger_targets(ReqwestErrorEvent(err), entity.clone());
+                        commands.trigger_targets(ReqwestErrorEvent(err), entity);
                     }
                 }
                 if let Ok(mut ec) = commands.get_entity(entity) {
@@ -173,7 +173,7 @@ impl<'a> BevyReqwestBuilder<'a> {
     ) -> Self {
         self.0.observe(
             |evt: Trigger<ReqwestResponseEvent>, mut commands: Commands| {
-                let entity = evt.target();
+                let entity = evt.target().unwrap();
                 let evt = evt.event();
                 let data = evt.deserialize_json::<T>();
 
@@ -238,10 +238,10 @@ impl<'w, 's> BevyReqwest<'w, 's> {
         &mut self,
         entity: Entity,
         req: reqwest::Request,
-    ) -> Result<BevyReqwestBuilder, Box<dyn std::error::Error>> {
+    ) -> Result<BevyReqwestBuilder> {
         let inflight = self.create_inflight_task(req);
         let mut ec = self.commands.get_entity(entity)?;
-        info!("inserting request on entity: {:?}", entity);
+        info!("inserting request on entity: {entity:?}");
         ec.insert(inflight);
         Ok(BevyReqwestBuilder(ec))
     }
@@ -368,11 +368,7 @@ impl ReqwestInflight {
         }
 
         #[cfg(not(target_family = "wasm"))]
-        if let Some(v) = future::block_on(future::poll_once(&mut self.res)) {
-            Some(v)
-        } else {
-            None
-        }
+        future::block_on(future::poll_once(&mut self.res))
     }
 
     #[cfg(target_family = "wasm")]
