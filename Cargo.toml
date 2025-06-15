@@ -2,7 +2,7 @@
 name        = "bevy_mod_reqwest"
 description = "Bevy http client using reqwest, with a focus on simple usage within the bevy runtime"
 version     = "0.19.2"
-edition     = "2021"
+edition     = "2024"
 readme      = "README.md"
 authors     = ["Kristoffer Ödmark <kristoffer.odmark90@gmail.com>"]
 repository  = "https://github.com/TotalKrill/bevy_mod_reqwest.git"
@@ -37,3 +37,6 @@ crossbeam-channel = "0.5"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 async-compat = "0.2"
+
+[lints.rust]
+mismatched_lifetime_syntaxes = "allow"

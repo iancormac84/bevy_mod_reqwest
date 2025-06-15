@@ -129,15 +129,15 @@ impl ReqwestPlugin {
 pub struct BevyReqwestBuilder<'a>(EntityCommands<'a>);
 
 impl<'a> BevyReqwestBuilder<'a> {
-    /// Provide a system where the first argument is [`Trigger`] [`ReqwestResponseEvent`] that will run on the
+    /// Provide a system where the first argument is [`On`] [`ReqwestResponseEvent`] that will run on the
     /// response from the http request
     ///
     /// # Examples
     ///
     /// ```
-    /// use bevy::prelude::Trigger;
+    /// use bevy::prelude::On;
     /// use bevy_mod_reqwest::ReqwestResponseEvent;
-    /// |trigger: Trigger<ReqwestResponseEvent>|  {
+    /// |trigger: On<ReqwestResponseEvent>|  {
     ///   bevy::log::info!("response: {:?}", trigger.event());
     /// };
     /// ```
@@ -149,15 +149,15 @@ impl<'a> BevyReqwestBuilder<'a> {
         self
     }
 
-    /// Provide a system where the first argument is [`Trigger`] [`JsonResponse`] that will run on the
+    /// Provide a system where the first argument is [`On`] [`JsonResponse`] that will run on the
     /// response from the http request, skipping some boilerplate of having to manually doing the JSON
     /// parsing
     ///
     /// # Examples
     /// ```
-    /// use bevy::prelude::Trigger;
+    /// use bevy::prelude::On;
     /// use bevy_mod_reqwest::JsonResponse;
-    /// |trigger: Trigger<JsonResponse<T>>|  {
+    /// |trigger: On<JsonResponse<T>>|  {
     ///   bevy::log::info!("response: {:?}", trigger.event());
     /// };
     /// ```
@@ -172,8 +172,8 @@ impl<'a> BevyReqwestBuilder<'a> {
         onresponse: OR,
     ) -> Self {
         self.0.observe(
-            |evt: Trigger<ReqwestResponseEvent>, mut commands: Commands| {
-                let entity = evt.target().unwrap();
+            |evt: On<ReqwestResponseEvent>, mut commands: Commands| {
+                let entity = evt.target();
                 let evt = evt.event();
                 let data = evt.deserialize_json::<T>();
 
@@ -196,15 +196,15 @@ impl<'a> BevyReqwestBuilder<'a> {
         self
     }
 
-    /// Provide a system where the first argument is [`Trigger`] [`ReqwestErrorEvent`] that will run on the
+    /// Provide a system where the first argument is [`On`] [`ReqwestErrorEvent`] that will run on the
     /// response from the http request
     ///
     /// # Examples
     ///
     /// ```
-    /// use bevy::prelude::Trigger;
+    /// use bevy::prelude::On;
     /// use bevy_mod_reqwest::ReqwestErrorEvent;
-    /// |trigger: Trigger<ReqwestErrorEvent>|  {
+    /// |trigger: On<ReqwestErrorEvent>|  {
     ///   bevy::log::info!("response: {:?}", trigger.event());
     /// };
     /// ```
@@ -285,7 +285,7 @@ impl<'w, 's> BevyReqwest<'w, 's> {
         #[cfg(not(target_family = "wasm"))]
         let task = {
             thread_pool.spawn(async move {
-                let task_res = async_compat::Compat::new(async {
+                async_compat::Compat::new(async {
                     let p = client.execute(request).await;
                     match p {
                         Ok(res) => {
@@ -298,8 +298,7 @@ impl<'w, 's> BevyReqwest<'w, 's> {
                         Err(e) => (Err(e), None),
                     }
                 })
-                .await;
-                task_res
+                .await
             })
         };
         // put it as a component to be polled, and remove the request, it has been handled
@@ -392,7 +391,7 @@ struct Parts {
     pub(crate) headers: HeaderMap,
 }
 
-#[derive(Clone, Event, Debug)]
+#[derive(Clone, Event, EntityEvent, Debug)]
 /// the resulting data from a finished request is found here
 pub struct ReqwestResponseEvent {
     bytes: bytes::Bytes,
@@ -400,7 +399,7 @@ pub struct ReqwestResponseEvent {
     headers: HeaderMap,
 }
 
-#[derive(Event, Debug)]
+#[derive(Event, EntityEvent, Debug)]
 pub struct ReqwestErrorEvent(pub reqwest::Error);
 
 impl ReqwestResponseEvent {
@@ -445,9 +444,9 @@ impl ReqwestResponseEvent {
 
 #[cfg(feature = "json")]
 pub mod json {
-    use bevy::prelude::Event;
+    use bevy::{ecs::event::EntityEvent, prelude::Event};
     use serde::Deserialize;
-    #[derive(Deserialize, Event)]
+    #[derive(Deserialize, Event, EntityEvent)]
     pub struct JsonResponse<T>(pub T);
 }
 
