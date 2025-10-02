@@ -28,8 +28,7 @@ bytes          = "1.6.0"
 futures-lite   = "2.3.0"
 
 [dependencies.bevy]
-version = "0.19"
-# git = "https://github.com/bevyengine/bevy"
+git = "https://github.com/bevyengine/bevy"
 default-features = false
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
