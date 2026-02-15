@@ -57,7 +57,7 @@ impl Plugin for ReqwestPlugin {
                         .url
                         .clone();
 
-                    if let None = world.get::<Name>(ctx.entity) {
+                    if world.get::<Name>(ctx.entity).is_none() {
                         let mut commands = world.commands();
                         let mut entity = commands.get_entity(ctx.entity).unwrap();
                         entity.insert(Name::new(format!("http: {url}")));
@@ -228,7 +228,7 @@ pub struct BevyReqwest<'w, 's> {
 impl<'w, 's> BevyReqwest<'w, 's> {
     /// Starts sending and processing the supplied [`reqwest::Request`]
     /// then use the [`BevyReqwestBuilder`] to add handlers for responses and errors
-    pub fn send(&mut self, req: reqwest::Request) -> BevyReqwestBuilder {
+    pub fn send(&mut self, req: reqwest::Request) -> BevyReqwestBuilder<'_> {
         let inflight = self.create_inflight_task(req);
         BevyReqwestBuilder(self.commands.spawn((inflight, DespawnReqwestEntity)))
     }
@@ -239,7 +239,7 @@ impl<'w, 's> BevyReqwest<'w, 's> {
         &mut self,
         entity: Entity,
         req: reqwest::Request,
-    ) -> Result<BevyReqwestBuilder, Box<dyn std::error::Error>> {
+    ) -> Result<BevyReqwestBuilder<'_>, Box<dyn std::error::Error>> {
         let inflight = self.create_inflight_task(req);
         let mut ec = self.commands.get_entity(entity)?;
         info!("inserting request on entity: {:?}", entity);
@@ -362,17 +362,13 @@ pub struct ReqwestInflight {
 impl ReqwestInflight {
     fn poll(&mut self) -> Option<Resp> {
         #[cfg(target_family = "wasm")]
-        if let Ok(v) = self.res.try_recv() {
-            Some(v)
-        } else {
-            None
+        {
+            self.res.try_recv().ok()
         }
 
         #[cfg(not(target_family = "wasm"))]
-        if let Some(v) = future::block_on(future::poll_once(&mut self.res)) {
-            Some(v)
-        } else {
-            None
+        {
+            future::block_on(future::poll_once(&mut self.res)).map(|v| v)
         }
     }
 
