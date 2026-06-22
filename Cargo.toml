@@ -10,26 +10,23 @@ license     = "MIT"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [features]
-default     = ["rustls-tls", "json", "log"]
+default     = ["rustls", "json", "log"]
 default-tls = ["reqwest/default-tls"]
 json        = ["reqwest/json", "serde_json"]
-rustls-tls  = ["reqwest/rustls-tls"]
+rustls      = ["reqwest/rustls"]
 msgpack     = ["rmp-serde"]
 log         = ["bevy/bevy_log"]
 
 [dependencies]
-reqwest        = { version = "0.12", default-features = false }
-rmp-serde      = { version = "1.1.2", optional = true}
-serde          = { version = "1.0.159", features = ["derive"] }
+bevy           = { version = "0.19", default-features = false }
+reqwest        = { version = "0.13", default-features = false }
+rmp-serde      = { version = "1.3.1", optional = true}
+serde          = { version = "1.0.228", features = ["derive"] }
 serde_json     = { version = "1", optional = true }
 
-anyhow         = "1.0.79"
-bytes          = "1.6.0"
-futures-lite   = "2.3.0"
-
-[dependencies.bevy]
-git = "https://github.com/bevyengine/bevy"
-default-features = false
+anyhow         = "1.0.102"
+bytes          = "1.12.0"
+futures-lite   = "2.6.1"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 crossbeam-channel = "0.5"
