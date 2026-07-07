@@ -16,6 +16,7 @@ json        = ["reqwest/json", "serde_json"]
 rustls      = ["reqwest/rustls"]
 msgpack     = ["rmp-serde"]
 log         = ["bevy/bevy_log"]
+query       = ["reqwest/query"]
 
 [dependencies]
 bevy           = { git = "https://github.com/bevyengine/bevy.git", default-features = false }
