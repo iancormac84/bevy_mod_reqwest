@@ -189,7 +189,7 @@ fn queue_when_entity_exists(
 }
 
 impl<'a> BevyReqwestBuilder<'a> {
-    /// Provide a system where the first argument is [`Trigger`] [`ReqwestResponseEvent`] that will run on the
+    /// Provide a system where the first argument is [`On`] [`ReqwestResponseEvent`] that will run on the
     /// response from the http request
     ///
     /// # Examples
@@ -201,7 +201,7 @@ impl<'a> BevyReqwestBuilder<'a> {
     ///   bevy::log::info!("response: {:?}", trigger.event());
     /// };
     /// ```
-    pub fn on_response<RB: Bundle, RM, OR: IntoObserverSystem<ReqwestResponseEvent, RB, RM>>(
+    pub fn on_response<RM, OR: IntoObserverSystem<ReqwestResponseEvent, RM>>(
         mut self,
         onresponse: OR,
     ) -> Self {
@@ -211,7 +211,7 @@ impl<'a> BevyReqwestBuilder<'a> {
         self
     }
 
-    /// Provide a system where the first argument is [`Trigger`] [`JsonResponse`] that will run on the
+    /// Provide a system where the first argument is [`On`] [`JsonResponse`] that will run on the
     /// response from the http request, skipping some boilerplate of having to manually doing the JSON
     /// parsing
     ///
@@ -229,9 +229,8 @@ impl<'a> BevyReqwestBuilder<'a> {
     #[cfg(feature = "json")]
     pub fn on_json_response<
         T: std::marker::Sync + std::marker::Send + serde::de::DeserializeOwned + 'static,
-        RB: Bundle,
         RM,
-        OR: IntoObserverSystem<json::JsonResponse<T>, RB, RM>,
+        OR: IntoObserverSystem<json::JsonResponse<T>, RM>,
     >(
         mut self,
         onresponse: OR,
@@ -263,7 +262,7 @@ impl<'a> BevyReqwestBuilder<'a> {
         self
     }
 
-    /// Provide a system where the first argument is [`Trigger`] [`ReqwestErrorEvent`] that will run on the
+    /// Provide a system where the first argument is [`On`] [`ReqwestErrorEvent`] that will run on the
     /// response from the http request
     ///
     /// # Examples
@@ -275,7 +274,7 @@ impl<'a> BevyReqwestBuilder<'a> {
     ///   bevy::log::info!("response: {:?}", trigger.event());
     /// };
     /// ```
-    pub fn on_error<EB: Bundle, EM, OE: IntoObserverSystem<ReqwestErrorEvent, EB, EM>>(
+    pub fn on_error<EM, OE: IntoObserverSystem<ReqwestErrorEvent, EM>>(
         mut self,
         onerror: OE,
     ) -> Self {
