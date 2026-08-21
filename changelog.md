@@ -1,4 +1,10 @@
 # Unreleased
+
+# 0.22.1
+ - Fix parameter-order-dependent crash when using `BevyReqwest::send_using_entity` with entities spawned via `Commands`
+ - Add local native/wasm smoke-test scripts and CORS test server for examples
+
+# 0.22.0
  - Support bevy 0.19
 
 # 0.18
